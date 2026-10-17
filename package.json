@@ -1,0 +1,15 @@
+{
+  "name": "bets",
+  "private": true,
+  "packageManager": "pnpm@11.5.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @bets/api --filter @bets/web run dev",
+    "dev:api": "pnpm --filter @bets/api dev",
+    "dev:web": "pnpm --filter @bets/web dev",
+    "build": "pnpm -r --filter @bets/shared --filter @bets/api --filter @bets/web run build",
+    "check": "pnpm -r --filter @bets/api --filter @bets/web run check"
+  }
+}

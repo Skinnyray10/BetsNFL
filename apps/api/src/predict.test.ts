@@ -59,7 +59,7 @@ describe('parsePredictions', () => {
 		assert.equal(parsed[0]?.minOdds, 1.85);
 	});
 
-	it('locks final scores to RapidAPI facts', () => {
+	it('locks final scores to ESPN facts', () => {
 		const finalGame: GameInput = {
 			...game,
 			status: 'Final',

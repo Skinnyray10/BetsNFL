@@ -1,16 +1,16 @@
 # Bets
 
-NFL board as a pnpm monorepo: a Node API that proxies [RapidAPI NFL Football API](https://rapidapi.com/Creativesdev/api/nfl-football-api), and a SvelteKit + Tailwind UI.
+NFL board as a pnpm monorepo: a Node API that uses ESPN's public API, and a SvelteKit + Tailwind UI.
 
 ```
-apps/api        Hono server (RapidAPI key stays here)
+apps/api        Hono server (ESPN public API)
 apps/web        SvelteKit UI
 packages/shared Shared TypeScript types
 ```
 
 ## Local setup
 
-1. Copy `.env.example` to `.env` and set `RAPIDAPI_KEY`.
+1. Copy `.env.example` to `.env` and set `CLAUDE_API_KEY` (required for predictions).
 2. Install and run both apps:
 
 ```bash
@@ -21,9 +21,9 @@ pnpm dev
 - Web: http://localhost:5173
 - API: http://localhost:3001/health
 
-Do not commit `.env`. If a RapidAPI or Claude key was pasted in a screenshot or chat, rotate it.
+Do not commit `.env`. If a Claude key was pasted in a screenshot or chat, rotate it.
 
-Forecasts: `GET /api/predictions` sends RapidAPI scoreboard + team facts to Claude on the server. The browser never receives `CLAUDE_API_KEY`.
+Forecasts: `GET /api/predictions` sends ESPN scoreboard + team facts to Claude on the server. The browser never receives `CLAUDE_API_KEY`.
 
 ## Prediction System with Bankroll Management
 
@@ -40,6 +40,17 @@ The prediction system integrates responsible betting guidance from `promptbot.md
 - Automatic validation against bankroll percentage limits (max 5% per bet)
 - Data quality assessment (injuries, records, head-to-head, recent form)
 - Responsible gambling warnings for high stakes or low confidence predictions
+
+### Fallback System
+When the Claude API is unavailable (insufficient funds, 402/429 errors), the system automatically falls back to a heuristic prediction engine based on `promptbot.md`:
+
+- **Detection**: Automatically detects Claude API errors (insufficient funds, quota exceeded, 402, 429)
+- **Heuristics**: Uses team records, injuries, and recent performance to generate predictions
+- **Transparency**: Fallback predictions are marked with `[FALLBACK - Sistema local]` in rationale
+- **Bankroll Rules**: Fallback predictions still apply all bankroll management rules
+- **API Response**: Includes `fallback: true` flag when using fallback system
+
+The fallback system ensures the app continues to work even when Claude credits run out.
 
 ### Prediction Response Fields
 ```typescript
@@ -81,19 +92,19 @@ This repo includes `render.yaml`:
 - `bets-api` — Node service, `pnpm --filter @bets/api start`
 - `bets-web` — Node service, `pnpm --filter @bets/web start`
 
-Set `RAPIDAPI_KEY` and `CORS_ORIGIN` (your Vercel or Render web origin) on the API. Set `PUBLIC_API_URL` on the web service to the API URL.
+Set `CLAUDE_API_KEY` and `CORS_ORIGIN` (your Vercel or Render web origin) on the API. Set `PUBLIC_API_URL` on the web service to the API URL.
 
 The web app uses `@sveltejs/adapter-vercel` when `VERCEL` is set, otherwise `@sveltejs/adapter-node` so Render can run `node build`.
 
 ## API routes
 
-| Route | RapidAPI source |
+| Route | ESPN source |
 | --- | --- |
-| `GET /api/teams` | `/nfl-team-list` |
-| `GET /api/teams/:id` | `/nfl-team-info?id=` |
-| `GET /api/teams/:id/players` | `/nfl-team-roster?id=` |
-| `GET /api/games` | `/nfl-scoreboard` |
-| `GET /api/games/:id` | `/nfl-boxscore?id=` |
-| `GET /api/season` | `/nfl-season` |
+| `GET /api/teams` | `/teams` |
+| `GET /api/teams/:id` | `/teams/:id` |
+| `GET /api/teams/:id/players` | `/teams/:id/roster` |
+| `GET /api/games` | `/scoreboard` |
+| `GET /api/games/:id` | `/scoreboard` (filtered by id) |
+| `GET /api/season` | `/scoreboard` (includes season info) |
 | `GET /api/predictions` | Scoreboard + team facts → Claude (with bankroll rules) |
 | `GET /api/games/:id/prediction` | One game + team facts → Claude (with bankroll rules) |

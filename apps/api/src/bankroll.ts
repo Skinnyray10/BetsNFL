@@ -52,12 +52,14 @@ export function validateBet(stake: number, bankroll: number, config: BankrollCon
 	valid: boolean;
 	reason?: string;
 } {
-	const stakePercent = (stake / 10) * config.maxStakePercent;
+	// Calculate actual percentage of bankroll
+	const stakePercentOfBankroll = (stake / 10) * config.maxStakePercent;
+	const actualPercent = stakePercentOfBankroll * 100;
 
-	if (stakePercent > config.maxStakePercent) {
+	if (stakePercentOfBankroll > config.maxStakePercent) {
 		return {
 			valid: false,
-			reason: `Stake ${stake}/10 exceeds ${config.maxStakePercent * 100}% of bankroll limit`
+			reason: `Stake ${stake}/10 (${actualPercent.toFixed(1)}%) exceeds ${config.maxStakePercent * 100}% of bankroll limit`
 		};
 	}
 

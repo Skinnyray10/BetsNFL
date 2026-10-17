@@ -13,7 +13,7 @@ import {
 	normalizeTeams
 } from './normalize.js';
 import { cacheKey, getCached, runClaudePredictions, setCached, type GameInput, type Prediction } from './predict.js';
-import { rapidGet } from './rapidapi.js';
+import { espnGet, getScoreboard, getTeams, getTeam, getTeamRoster } from './espn.js';
 import {
 	calculateStake,
 	calculateMinOdds,
@@ -69,7 +69,7 @@ function httpError(error: unknown) {
 
 app.get('/api/teams', async (c) => {
 	try {
-		const payload = await rapidGet('/nfl-team-list');
+		const payload = await getTeams();
 		return c.json({ teams: normalizeTeams(payload) });
 	} catch (error) {
 		const { status, message } = httpError(error);
@@ -81,8 +81,10 @@ app.get('/api/teams/:id', async (c) => {
 	const id = parseId(c.req.param('id'));
 	if (!id) return c.json({ error: 'Invalid id' }, 400);
 	try {
-		const payload = await rapidGet('/nfl-team-info', { id });
-		return c.json({ team: normalizeTeam(payload, id) });
+		const payload = await getTeam(id);
+		const team = normalizeTeam(payload, id);
+		// ESPN returns team nested, normalize it
+		return c.json({ team: team });
 	} catch (error) {
 		const { status, message } = httpError(error);
 		return c.json({ error: message }, status);
@@ -93,7 +95,7 @@ app.get('/api/teams/:id/players', async (c) => {
 	const id = parseId(c.req.param('id'));
 	if (!id) return c.json({ error: 'Invalid id' }, 400);
 	try {
-		const payload = await rapidGet('/nfl-team-roster', { id });
+		const payload = await getTeamRoster(id);
 		return c.json({ players: normalizePlayers(payload) });
 	} catch (error) {
 		const { status, message } = httpError(error);
@@ -110,7 +112,7 @@ app.get('/api/players/:id', async (c) => {
 
 app.get('/api/season', async (c) => {
 	try {
-		const payload = await rapidGet('/nfl-season');
+		const payload = await getScoreboard();
 		return c.json({ season: payload });
 	} catch (error) {
 		const { status, message } = httpError(error);
@@ -120,7 +122,7 @@ app.get('/api/season', async (c) => {
 
 app.get('/api/games', async (c) => {
 	try {
-		const payload = await rapidGet('/nfl-scoreboard');
+		const payload = await getScoreboard();
 		return c.json({ games: normalizeGames(payload) });
 	} catch (error) {
 		const { status, message } = httpError(error);
@@ -132,7 +134,7 @@ app.get('/api/games/:id', async (c) => {
 	const id = parseId(c.req.param('id'));
 	if (!id) return c.json({ error: 'Invalid id' }, 400);
 	try {
-		const payload = await rapidGet('/nfl-boxscore', { id });
+		const payload = await getScoreboard();
 		const games = normalizeGames(payload);
 		return c.json({ game: games.find((game) => game.id === id) ?? games[0] ?? null });
 	} catch (error) {
@@ -143,13 +145,16 @@ app.get('/api/games/:id', async (c) => {
 
 app.get('/api/predictions', async (c) => {
 	try {
-		const payload = await rapidGet('/nfl-scoreboard');
+		const payload = await getScoreboard();
 		const games = gamesFromScoreboard(payload).slice(0, 16);
 		const key = cacheKey(games);
 		const cached = getCached(key);
 		if (cached) return c.json({ predictions: cached, cached: true });
 		const extraFacts = await extraFactsFor(games);
 		const predictions = await runClaudePredictions(games, extraFacts);
+
+		// Check if using fallback
+		const isFallback = predictions.some((p) => p.rationale.includes('[FALLBACK'));
 
 		// Validate and adjust predictions based on bankroll rules
 		const validatedPredictions = predictions.map((p) => {
@@ -175,7 +180,7 @@ app.get('/api/predictions', async (c) => {
 		});
 
 		setCached(key, validatedPredictions);
-		return c.json({ predictions: validatedPredictions, cached: false });
+		return c.json({ predictions: validatedPredictions, cached: false, fallback: isFallback });
 	} catch (error) {
 		const { status, message } = httpError(error);
 		return c.json({ error: message }, status);
@@ -186,13 +191,9 @@ app.get('/api/games/:id/prediction', async (c) => {
 	const id = parseId(c.req.param('id'));
 	if (!id) return c.json({ error: 'Invalid id' }, 400);
 	try {
-		const [board, box] = await Promise.all([
-			rapidGet('/nfl-scoreboard'),
-			rapidGet('/nfl-boxscore', { id }).catch(() => null)
-		]);
+		const board = await getScoreboard();
 		const boardGames = normalizeGames(board);
-		const boxGames = box ? normalizeGames(box) : [];
-		const full = boardGames.find((game) => game.id === id) ?? boxGames[0] ?? null;
+		const full = boardGames.find((game) => game.id === id) ?? null;
 		if (!full) return c.json({ error: 'Game not found' }, 404);
 		const game = {
 			id: full.id,
@@ -204,6 +205,9 @@ app.get('/api/games/:id/prediction', async (c) => {
 		};
 		const extraFacts = await extraFactsFor([game]);
 		const predictions = await runClaudePredictions([game], extraFacts);
+
+		// Check if using fallback
+		const isFallback = predictions.some((p) => p.rationale.includes('[FALLBACK'));
 
 		// Validate and adjust prediction based on bankroll rules
 		const prediction = predictions[0];
@@ -222,7 +226,7 @@ app.get('/api/games/:id/prediction', async (c) => {
 			prediction.warning = prediction.warning || generateWarning(prediction.stake, prediction.confidence, dataQuality);
 		}
 
-		return c.json({ prediction: prediction ?? null, game: full });
+		return c.json({ prediction: prediction ?? null, game: full, fallback: isFallback });
 	} catch (error) {
 		const { status, message } = httpError(error);
 		return c.json({ error: message }, status);

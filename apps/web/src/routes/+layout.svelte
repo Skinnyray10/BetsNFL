@@ -9,7 +9,7 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 	<title>Bets — NFL board</title>
-	<meta name="description" content="NFL board: RapidAPI facts, Claude forecasts on the server." />
+	<meta name="description" content="NFL board: ESPN facts, AI forecasts on the server." />
 </svelte:head>
 
 <div class="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-6">
@@ -25,6 +25,6 @@
 	</header>
 	<main class="flex-1">{@render children()}</main>
 	<footer class="mt-12 border-t border-white/10 pt-4 text-xs text-white/40">
-		Facts via RapidAPI. Forecasts via Claude on the server. Keys stay on the server. Not betting advice.
+		Facts via ESPN. Forecasts via AI on the server. Keys stay on the server. Not betting advice.
 	</footer>
 </div>

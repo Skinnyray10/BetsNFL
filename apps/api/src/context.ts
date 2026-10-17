@@ -1,4 +1,4 @@
-import { rapidGet } from './rapidapi.js';
+import { getTeam } from './espn.js';
 import { teamFacts, type TeamFacts } from './facts.js';
 import type { GameInput } from './predict.js';
 import { normalizeGames as parseGames } from './normalize.js';
@@ -28,9 +28,9 @@ export async function extraFactsFor(games: ReturnType<typeof gamesFromScoreboard
 		...new Set(games.flatMap((game) => [game.home?.id, game.away?.id].filter((id): id is string => Boolean(id))))
 	].slice(0, 8);
 
-	const season = await rapidGet('/nfl-season').catch(() => null);
+	const season = null; // ESPN scoreboard includes season info in the response
 	const teams: TeamFacts[] = [];
-	const results = await Promise.allSettled(teamIds.map((id) => rapidGet('/nfl-team-info', { id })));
+	const results = await Promise.allSettled(teamIds.map((id) => getTeam(id)));
 	results.forEach((result, index) => {
 		const id = teamIds[index];
 		if (!id || result.status !== 'fulfilled') return;

@@ -2,6 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema';
 import { claudeApiKey, claudeModel } from './secrets.js';
 import { isFinalStatus } from './ids.js';
+import { isClaudeError, generateFallbackPredictions } from './fallback.js';
+import type { TeamFacts } from './facts.js';
 
 export type GameInput = {
 	id: string;
@@ -94,8 +96,14 @@ Use ONLY the facts in the user message (RapidAPI/ESPN-derived). Do not invent in
 If a game status is final, kind must be result_analysis: copy the official scores from the facts, do not invent a different result, and explain why it unfolded that way.
 If a game is not final, kind must be forecast: predicted scores, win probabilities, home spread (negative means home favored), and total.
 
-## Probability Calibration
-awayWinProb + homeWinProb must equal 1 (within 0.01). Be calibrated: avoid 90%+ unless the facts are lopsided.
+## Probability Calibration (MANDATORY)
+awayWinProb + homeWinProb must equal 1 (within 0.01).
+**NEVER use 0% or 100% probabilities** - sports have inherent uncertainty.
+- Minimum probability: 5% (no lower, ever)
+- Maximum probability: 95% (no higher, ever)
+- For well-matched teams (record difference ≤ 2 games): keep probabilities between 40-60%
+- For clear favorites: maximum 85% (even perfect teams lose)
+- Be calibrated: avoid 90%+ unless the facts are extremely lopsided
 confidence is 0-1 for how well the supplied facts support the call.
 
 ## Bankroll Management (MANDATORY)
@@ -128,6 +136,12 @@ export function normalizeProbabilities(item: Prediction): Prediction {
 		away /= sum;
 		home /= sum;
 	}
+
+	// Clamp probabilities to realistic range (5% - 95%)
+	// Sports never have 0% or 100% certainty
+	away = Math.max(0.05, Math.min(0.95, away));
+	home = 1 - away;
+
 	return {
 		...item,
 		awayWinProb: Math.round(away * 1000) / 1000,
@@ -171,8 +185,8 @@ export function parsePredictions(payload: unknown, games: GameInput[]): Predicti
 			rationale: typeof item.rationale === 'string' ? item.rationale : '',
 			stake: Number(item.stake) || 1,
 			minOdds: Number(item.minOdds) || 1.50,
-			value: typeof item.value === 'string' ? item.value : 'Análisis basado en estadísticas disponibles',
-			warning: typeof item.warning === 'string' ? item.warning : 'Las apuestas deportivas conllevan riesgos. Apuesta responsablemente.'
+			value: typeof item.value === 'string' && item.value.trim() ? item.value : 'Análisis basado en estadísticas disponibles',
+			warning: typeof item.warning === 'string' && item.warning.trim() ? item.warning : 'Las apuestas deportivas conllevan riesgos. Apuesta responsablemente.'
 		});
 		if (prediction.kind === 'result_analysis' && game.away?.score && game.home?.score) {
 			prediction.awayScore = Number(game.away.score);
@@ -184,33 +198,51 @@ export function parsePredictions(payload: unknown, games: GameInput[]): Predicti
 }
 
 export async function runClaudePredictions(games: GameInput[], extraFacts: unknown): Promise<Prediction[]> {
-	const client = new Anthropic({ apiKey: claudeApiKey() });
-	const message = await client.messages.parse({
-		model: claudeModel(),
-		max_tokens: 4096,
-		temperature: 0,
-		system: SYSTEM,
-		messages: [
-			{
-				role: 'user',
-				content: JSON.stringify(
-					{
-						asOf: new Date().toISOString(),
-						timezone: 'America/Mexico_City',
-						games,
-						extraFacts
-					},
-					null,
-					2
-				)
+	try {
+		const client = new Anthropic({ apiKey: claudeApiKey() });
+		const message = await client.messages.parse({
+			model: claudeModel(),
+			max_tokens: 4096,
+			temperature: 0,
+			system: SYSTEM,
+			messages: [
+				{
+					role: 'user',
+					content: JSON.stringify(
+						{
+							asOf: new Date().toISOString(),
+							timezone: 'America/Mexico_City',
+							games,
+							extraFacts
+						},
+						null,
+						2
+					)
+				}
+			],
+			output_config: {
+				effort: 'high',
+				format: jsonSchemaOutputFormat(schema)
 			}
-		],
-		output_config: {
-			effort: 'high',
-			format: jsonSchemaOutputFormat(schema)
+		});
+		return parsePredictions(message.parsed_output, games);
+	} catch (error) {
+		if (isClaudeError(error)) {
+			console.warn('Claude API error, using fallback predictions:', error);
+			// Use fallback system
+			const teamFactsMap = new Map<string, TeamFacts>();
+			if (extraFacts && typeof extraFacts === 'object' && 'teams' in extraFacts && Array.isArray((extraFacts as { teams: unknown }).teams)) {
+				const teams = (extraFacts as { teams: unknown[] }).teams;
+				teams.forEach((team) => {
+					if (team && typeof team === 'object' && 'id' in team) {
+						teamFactsMap.set(String(team.id), team as TeamFacts);
+					}
+				});
+			}
+			return generateFallbackPredictions(games, teamFactsMap);
 		}
-	});
-	return parsePredictions(message.parsed_output, games);
+		throw error;
+	}
 }
 
 const cache = new Map<string, { expires: number; predictions: Prediction[] }>();

@@ -72,7 +72,7 @@
 								<img
 									src={game.away.logo}
 									alt={game.away.name}
-									class="h-12 w-12 object-contain drop-shadow-lg"
+									class="h-12 w-12 object-contain drop-shadow-lg transition group-hover:scale-110"
 								/>
 							{:else}
 								<div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-lg font-bold">
@@ -82,12 +82,12 @@
 							<p class="text-center text-sm font-medium">{game.away.name}</p>
 							{#if forecast}
 								<div class="w-full pt-1">
-									<div class="mb-1 flex justify-between text-xs">
-										<span class="text-white/60">{percent(forecast.awayWinProb)}</span>
+									<div class="mb-1 flex justify-center text-xs">
+										<span class="font-semibold text-white/70">{percent(forecast.awayWinProb)}</span>
 									</div>
 									<div class="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
 										<div
-											class="h-full transition-all duration-500 {getProbBarColor(forecast.awayWinProb)}"
+											class="h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-500"
 											style="width: {forecast.awayWinProb * 100}%"
 										></div>
 									</div>
@@ -96,17 +96,23 @@
 						</div>
 
 						<!-- Score / VS -->
-						<div class="mx-4 flex flex-col items-center">
+						<div class="mx-4 flex flex-col items-center justify-center gap-1">
 							{#if game.away.score && game.home.score}
 								<div class="text-xl font-bold text-gold">
 									{game.away.score}
 								</div>
-								<div class="my-0.5 text-sm text-white/30">–</div>
+								<div class="text-xs text-white/30">—</div>
 								<div class="text-xl font-bold text-gold">
 									{game.home.score}
 								</div>
 							{:else}
-								<div class="text-sm font-semibold text-white/30">VS</div>
+								<div class="rounded-lg bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/40">VS</div>
+								{#if forecast && forecast.kind === 'forecast'}
+									<div class="mt-1 flex flex-col items-center gap-0.5">
+										<div class="text-xs text-white/30">Pred</div>
+										<div class="text-sm font-semibold text-gold/80">{forecast.awayScore}–{forecast.homeScore}</div>
+									</div>
+								{/if}
 							{/if}
 						</div>
 
@@ -116,7 +122,7 @@
 								<img
 									src={game.home.logo}
 									alt={game.home.name}
-									class="h-12 w-12 object-contain drop-shadow-lg"
+									class="h-12 w-12 object-contain drop-shadow-lg transition group-hover:scale-110"
 								/>
 							{:else}
 								<div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-lg font-bold">
@@ -126,12 +132,12 @@
 							<p class="text-center text-sm font-medium">{game.home.name}</p>
 							{#if forecast}
 								<div class="w-full pt-1">
-									<div class="mb-1 flex justify-between text-xs">
-										<span class="text-white/60">{percent(forecast.homeWinProb)}</span>
+									<div class="mb-1 flex justify-center text-xs">
+										<span class="font-semibold text-white/70">{percent(forecast.homeWinProb)}</span>
 									</div>
 									<div class="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
 										<div
-											class="h-full transition-all duration-500 {getProbBarColor(forecast.homeWinProb)}"
+											class="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
 											style="width: {forecast.homeWinProb * 100}%"
 										></div>
 									</div>
@@ -139,6 +145,24 @@
 							{/if}
 						</div>
 					</div>
+
+					<!-- Betting Info Footer (solo para forecasts) -->
+					{#if forecast && forecast.kind === 'forecast'}
+						<div class="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-xs">
+							<div class="flex items-center gap-1.5">
+								<span class="text-white/40">Stake:</span>
+								<span class="font-semibold {forecast.stake >= 5 ? 'text-green-400' : 'text-gold'}">{forecast.stake}/10</span>
+							</div>
+							<div class="flex items-center gap-1.5">
+								<span class="text-white/40">Min Odds:</span>
+								<span class="font-semibold text-white/70">{forecast.minOdds.toFixed(2)}</span>
+							</div>
+							<div class="flex items-center gap-1.5">
+								<span class="text-white/40">Conf:</span>
+								<span class="font-semibold {forecast.confidence >= 0.7 ? 'text-green-400' : forecast.confidence >= 0.5 ? 'text-gold' : 'text-amber-400'}">{percent(forecast.confidence)}</span>
+							</div>
+						</div>
+					{/if}
 				{/if}
 			</a>
 		{/each}

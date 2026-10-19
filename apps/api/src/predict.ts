@@ -106,6 +106,16 @@ awayWinProb + homeWinProb must equal 1 (within 0.01).
 - Be calibrated: avoid 90%+ unless the facts are extremely lopsided
 confidence is 0-1 for how well the supplied facts support the call.
 
+## Structured Reasoning Process (Apply internally)
+1. Assess data quality → set confidence baseline (0.40-0.75)
+2. Analyze team strengths: records, avgPointsFor/Against, injuries
+3. Calculate initial win probabilities with +4% home advantage
+4. Verify calibration constraints (40-60% for close matches, max 85%)
+5. Predict scores based on offensive/defensive stats
+6. Evaluate betting value: edge = our_prob - implied_prob
+7. Determine stake (1-3 default, 5+ only with clear edge and high confidence)
+8. Generate 2-5 concrete keyFactors from data
+
 ## Bankroll Management (MANDATORY)
 - stake: Recommended stake on a 1-10 scale. Only recommend 5+ when there is clear value. Default to 1-3 for uncertain predictions.
 - minOdds: Minimum acceptable decimal odds (e.g., 1.90, 2.10). Below this, the bet has no value.
@@ -119,6 +129,7 @@ confidence is 0-1 for how well the supplied facts support the call.
 
 ## Key Factors
 keyFactors: 2-5 short bullets grounded in the facts (injuries, records, trends, head-to-head, home/away performance).
+Be specific: "Chiefs 8-2, #1 offense (29.8 pts/game)" not "Chiefs have momentum"
 
 ## Output
 Return one prediction per gameId you were given with all required fields including stake, minOdds, value, and warning.`;

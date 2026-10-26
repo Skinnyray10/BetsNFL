@@ -5,7 +5,8 @@ import type { PageLoad } from './$types';
 export const load: PageLoad = async ({ fetch }) => {
 	try {
 		const data = await apiGet<{ games: NflGame[] }>('/api/games', fetch);
-		return { games: data.games, error: null as string | null };
+		const games = data.games.filter((game) => game.away && game.home);
+		return { games, error: null as string | null };
 	} catch (error) {
 		return { games: [] as NflGame[], error: error instanceof Error ? error.message : 'Unable to load games' };
 	}

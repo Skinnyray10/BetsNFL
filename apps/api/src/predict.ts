@@ -1,9 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema';
-import { claudeApiKey, claudeModel } from './secrets.js';
 import { isFinalStatus } from './ids.js';
 import { isClaudeError, generateFallbackPredictions } from './fallback.js';
 import type { TeamFacts } from './facts.js';
+import { createProvider, detectProvider } from './llm-provider.js';
 
 export type GameInput = {
 	id: string;
@@ -210,36 +208,37 @@ export function parsePredictions(payload: unknown, games: GameInput[]): Predicti
 
 export async function runClaudePredictions(games: GameInput[], extraFacts: unknown): Promise<Prediction[]> {
 	try {
-		const client = new Anthropic({ apiKey: claudeApiKey() });
-		const message = await client.messages.parse({
-			model: claudeModel(),
-			max_tokens: 4096,
-			temperature: 0,
+		const providerConfig = detectProvider();
+		const provider = createProvider(providerConfig);
+
+		console.log(`Using LLM provider: ${providerConfig.type} with model: ${providerConfig.model}`);
+
+		const userMessage = JSON.stringify(
+			{
+				asOf: new Date().toISOString(),
+				timezone: 'America/Mexico_City',
+				games,
+				extraFacts
+			},
+			null,
+			2
+		);
+
+		const response = await provider.generateJSON({
 			system: SYSTEM,
-			messages: [
-				{
-					role: 'user',
-					content: JSON.stringify(
-						{
-							asOf: new Date().toISOString(),
-							timezone: 'America/Mexico_City',
-							games,
-							extraFacts
-						},
-						null,
-						2
-					)
-				}
-			],
-			output_config: {
-				effort: 'high',
-				format: jsonSchemaOutputFormat(schema)
-			}
+			messages: [{ role: 'user', content: userMessage }],
+			schema,
+			temperature: 0,
+			maxTokens: 4096
 		});
-		return parsePredictions(message.parsed_output, games);
+
+		const parsed = JSON.parse(response.content);
+		console.log(`Generated predictions using ${response.provider} (${response.model})`);
+
+		return parsePredictions(parsed, games);
 	} catch (error) {
 		if (isClaudeError(error)) {
-			console.warn('Claude API error, using fallback predictions:', error);
+			console.warn('LLM API error, using fallback predictions:', error);
 			// Use fallback system
 			const teamFactsMap = new Map<string, TeamFacts>();
 			if (extraFacts && typeof extraFacts === 'object' && 'teams' in extraFacts && Array.isArray((extraFacts as { teams: unknown }).teams)) {

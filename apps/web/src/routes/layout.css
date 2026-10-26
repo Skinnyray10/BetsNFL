@@ -1,22 +1,30 @@
 @import 'tailwindcss';
+@import '../lib/design-tokens.css';
 
 @theme {
-	--font-sans: 'Sora', ui-sans-serif, system-ui, sans-serif;
-	--color-field: #07140f;
-	--color-turf: #0f2a1c;
-	--color-gold: #e4c36a;
-	--color-ink: #f4efe4;
+	/* Legacy Tailwind mappings - use design tokens for new code */
+	--font-sans: var(--font-body);
+	--color-field: var(--base-950);
+	--color-turf: var(--base-800);
+	--color-gold: var(--neon-gold);
+	--color-ink: var(--text-primary);
 }
 
 html {
-	background: var(--color-field);
-	color: var(--color-ink);
+	background: var(--base-950);
+	color: var(--text-primary);
+	font-family: var(--font-body);
+	font-weight: var(--font-weight-body);
+	line-height: var(--line-height-body);
 }
 
 body {
 	min-height: 100vh;
 	background:
-		radial-gradient(1200px 500px at 10% -10%, rgb(228 195 106 / 0.16), transparent 55%),
-		radial-gradient(900px 400px at 100% 0%, rgb(34 197 94 / 0.12), transparent 50%),
-		var(--color-field);
+		/* Neon gold glow top-left */
+		radial-gradient(1200px 500px at 10% -10%, rgba(255, 213, 0, 0.12), transparent 55%),
+		/* Neon cyan glow top-right */
+		radial-gradient(900px 400px at 100% 0%, rgba(0, 217, 255, 0.08), transparent 50%),
+		/* Deep void base */
+		var(--base-950);
 }

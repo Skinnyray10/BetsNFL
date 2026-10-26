@@ -8,12 +8,14 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "check": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx --test src/*.test.ts"
+    "test": "tsx --test src/*.test.ts",
+    "verify": "tsx verify-api-key.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
     "@hono/node-server": "^1.19.6",
     "dotenv": "^17.2.3",
+    "groq-sdk": "^1.6.0",
     "hono": "^4.10.3"
   },
   "devDependencies": {

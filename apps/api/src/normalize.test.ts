@@ -75,4 +75,11 @@ describe('normalizeGames', () => {
 		assert.equal(games[0]?.home?.name, 'Raiders');
 		assert.equal(games[0]?.away?.score, '24');
 	});
+
+	it('skips games without both teams', () => {
+		const games = normalizeGames({
+			events: [{ id: '1', name: 'TBD', competitions: [{ competitors: [] }] }]
+		});
+		assert.equal(games.length, 0);
+	});
 });

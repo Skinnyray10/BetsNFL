@@ -227,7 +227,7 @@ export function normalizeGames(payload: unknown): NflGame[] {
 	walk(payload, (node) => {
 		if ('competitions' in node || 'event' in node || 'shortName' in node) {
 			const game = gameFrom(node);
-			if (game) games.push(game);
+			if (game?.home && game.away) games.push(game);
 		}
 	});
 	return uniqueById(games);

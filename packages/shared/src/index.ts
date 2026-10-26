@@ -8,6 +8,9 @@ export type NflTeam = {
 	logo: string | null;
 	conference?: string;
 	division?: string;
+	record?: string;
+	conferenceRank?: string;
+	divisionRank?: string;
 };
 
 export type NflPlayer = {
@@ -24,6 +27,8 @@ export type NflPlayer = {
 	age?: number;
 };
 
+export type Team = NflTeam & { roster?: NflPlayer[] };
+
 export type NflCompetitor = {
 	id: string;
 	name: string;
@@ -31,6 +36,8 @@ export type NflCompetitor = {
 	score?: string;
 	logo: string | null;
 	homeAway?: string;
+	record?: string;
+	conference?: string;
 };
 
 export type NflGame = {
@@ -66,3 +73,5 @@ export type NflPrediction = {
 	value: string;
 	warning: string;
 };
+
+export type GameWithPrediction = NflGame & { prediction?: NflPrediction };

@@ -33,6 +33,11 @@
 		const winPct = total > 0 ? wins / total : 0;
 		return { wins, losses, winPct };
 	}
+
+	const teamAWinPct = $derived(getRecordNumbers(data.teamA?.record).winPct);
+	const teamBWinPct = $derived(getRecordNumbers(data.teamB?.record).winPct);
+	const total = $derived(teamAWinPct + teamBWinPct);
+	const teamAPercent = $derived(total > 0 ? (teamAWinPct / total) * 100 : 50);
 </script>
 
 <!-- Header Section -->
@@ -64,7 +69,7 @@
 					>
 						<option value="">Select Team...</option>
 						{#each data.allTeams as team}
-							<option value={team.id}>{team.displayName}</option>
+							<option value={team.id}>{team.name}</option>
 						{/each}
 					</select>
 				</div>
@@ -87,7 +92,7 @@
 					>
 						<option value="">Select Team...</option>
 						{#each data.allTeams as team}
-							<option value={team.id}>{team.displayName}</option>
+							<option value={team.id}>{team.name}</option>
 						{/each}
 					</select>
 				</div>
@@ -122,9 +127,9 @@
 			<GlassCard variant="default">
 				<div class="team-header">
 					{#if data.teamA.logo}
-						<img src={data.teamA.logo} alt={data.teamA.displayName} class="team-logo-large" />
+						<img src={data.teamA.logo} alt={data.teamA.name} class="team-logo-large" />
 					{/if}
-					<h2 class="team-title">{data.teamA.displayName}</h2>
+					<h2 class="team-title">{data.teamA.name}</h2>
 					<div class="team-meta">
 						<span class="team-abbr">{data.teamA.abbreviation}</span>
 						<span class="team-divider">·</span>
@@ -194,11 +199,6 @@
 					<div class="comparison-bar-container">
 						<div class="comparison-label">Win %</div>
 						<div class="comparison-bar">
-							{@const teamAWinPct = getRecordNumbers(data.teamA.record).winPct}
-							{@const teamBWinPct = getRecordNumbers(data.teamB.record).winPct}
-							{@const total = teamAWinPct + teamBWinPct}
-							{@const teamAPercent = total > 0 ? (teamAWinPct / total) * 100 : 50}
-
 							<div class="bar-track">
 								<div class="bar-fill bar-a" style="width: {teamAPercent}%"></div>
 								<div class="bar-fill bar-b" style="width: {100 - teamAPercent}%"></div>
@@ -276,9 +276,9 @@
 			<GlassCard variant="default">
 				<div class="team-header">
 					{#if data.teamB.logo}
-						<img src={data.teamB.logo} alt={data.teamB.displayName} class="team-logo-large" />
+						<img src={data.teamB.logo} alt={data.teamB.name} class="team-logo-large" />
 					{/if}
-					<h2 class="team-title">{data.teamB.displayName}</h2>
+					<h2 class="team-title">{data.teamB.name}</h2>
 					<div class="team-meta">
 						<span class="team-abbr">{data.teamB.abbreviation}</span>
 						<span class="team-divider">·</span>

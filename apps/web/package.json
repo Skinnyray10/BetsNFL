@@ -35,6 +35,7 @@
 	},
 	"imports": {
 		"#lib": "./src/lib/index.js",
+		"#lib/components/*": "./src/lib/components/*/index.ts",
 		"#lib/*": "./src/lib/*"
 	},
 	"engines": {

@@ -17,7 +17,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
 
 		if (teamAId) {
 			try {
-				teamA = await apiGet<Team>(`/api/teams/${teamAId}`, fetch);
+				teamA = (await apiGet<{ team: Team }>(`/api/teams/${teamAId}`, fetch)).team;
 			} catch (error) {
 				console.error('Error loading team A:', error);
 			}
@@ -25,7 +25,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
 
 		if (teamBId) {
 			try {
-				teamB = await apiGet<Team>(`/api/teams/${teamBId}`, fetch);
+				teamB = (await apiGet<{ team: Team }>(`/api/teams/${teamBId}`, fetch)).team;
 			} catch (error) {
 				console.error('Error loading team B:', error);
 			}

@@ -89,8 +89,8 @@
 					<a href="/games/{game.id}" class="game-link">
 						<!-- Confidence Badge -->
 						{#if game.prediction}
-							<div class="confidence-badge {game.prediction.confidence >= 70 ? 'high' : game.prediction.confidence >= 50 ? 'medium' : 'low'}">
-								{game.prediction.confidence}% Confidence
+							<div class="confidence-badge {game.prediction.confidence >= 0.7 ? 'high' : game.prediction.confidence >= 0.5 ? 'medium' : 'low'}">
+								{Math.round(game.prediction.confidence * 100)}% Confidence
 							</div>
 						{/if}
 
@@ -98,16 +98,16 @@
 						<div class="teams-container">
 							<!-- Away Team -->
 							<div class="team">
-								{#if game.competitions[0]?.competitors?.[1]?.team?.logo}
+								{#if game.away?.logo}
 									<img
-										src={game.competitions[0].competitors[1].team.logo}
-										alt={game.competitions[0].competitors[1].team.displayName}
+										src={game.away.logo}
+										alt={game.away.name}
 										class="team-logo"
 									/>
 								{/if}
 								<div class="team-info">
-									<p class="team-name">{game.competitions[0]?.competitors?.[1]?.team?.displayName || 'Away'}</p>
-									<p class="team-record">{game.competitions[0]?.competitors?.[1]?.records?.[0]?.summary || '-'}</p>
+									<p class="team-name">{game.away?.name || 'Away'}</p>
+									<p class="team-record">{game.away?.record || '-'}</p>
 								</div>
 							</div>
 
@@ -118,16 +118,16 @@
 
 							<!-- Home Team -->
 							<div class="team">
-								{#if game.competitions[0]?.competitors?.[0]?.team?.logo}
+								{#if game.home?.logo}
 									<img
-										src={game.competitions[0].competitors[0].team.logo}
-										alt={game.competitions[0].competitors[0].team.displayName}
+										src={game.home.logo}
+										alt={game.home.name}
 										class="team-logo"
 									/>
 								{/if}
 								<div class="team-info">
-									<p class="team-name">{game.competitions[0]?.competitors?.[0]?.team?.displayName || 'Home'}</p>
-									<p class="team-record">{game.competitions[0]?.competitors?.[0]?.records?.[0]?.summary || '-'}</p>
+									<p class="team-name">{game.home?.name || 'Home'}</p>
+									<p class="team-record">{game.home?.record || '-'}</p>
 								</div>
 							</div>
 						</div>
@@ -137,7 +137,7 @@
 							<div class="prediction-section">
 								<div class="prediction-row">
 									<span class="prediction-label">Winner</span>
-									<span class="prediction-value winner">{game.prediction.predictedWinner}</span>
+									<span class="prediction-value winner">{game.prediction.winnerName}</span>
 								</div>
 								<ProbabilityBar
 									value={game.prediction.homeWinProb}
@@ -145,7 +145,7 @@
 									size="sm"
 								/>
 								<div class="prediction-meta">
-									<span class="meta-item">Edge: <strong>{game.prediction.edge.toFixed(1)}%</strong></span>
+									<span class="meta-item">Edge: <strong>{(Math.abs(game.prediction.homeWinProb - 0.5) * 100).toFixed(1)}%</strong></span>
 									<span class="meta-item">Stake: <strong>{game.prediction.stake}/10</strong></span>
 								</div>
 							</div>

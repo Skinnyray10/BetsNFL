@@ -31,6 +31,7 @@ type NflCompetitor = {
 	score?: string;
 	logo: string | null;
 	homeAway?: string;
+	record?: string;
 };
 
 type NflGame = {

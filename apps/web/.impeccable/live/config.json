@@ -1,0 +1,8 @@
+{
+  "buildPath": "code",
+  "devServer": {
+    "command": "pnpm dev",
+    "url": "http://localhost:5173",
+    "readyPattern": "Local:.*5173"
+  }
+}

@@ -1,0 +1,162 @@
+/**
+ * Design Tokens: NFL Quantum Glass
+ *
+ * Visual world: Dark glassmorphism meets neubrutalism
+ * Based on DESIGN.md specification
+ */
+
+@layer tokens {
+	:root {
+		/* ========================================
+		   BASE PALETTE - Deeper blacks than before
+		   ======================================== */
+		--base-950: #05090d; /* Deep void */
+		--base-900: #0a1419; /* Field night */
+		--base-800: #0f2028; /* Turf shadow */
+		--base-700: #1a2f3a; /* Mid ground */
+
+		/* ========================================
+		   NEON ACCENTS - Vibrant and electric
+		   ======================================== */
+		--neon-gold: #ffd500; /* Primary accent, CTAs, highlights */
+		--neon-green: #00ff88; /* Winners, positive signals, high confidence */
+		--neon-cyan: #00d9ff; /* Away teams, secondary data */
+		--neon-purple: #b366ff; /* Tertiary highlights, special states */
+		--neon-red: #ff3366; /* Warnings, low confidence, errors */
+
+		/* ========================================
+		   GLASS MATERIALS
+		   ======================================== */
+		--glass-bg: rgba(255, 255, 255, 0.03);
+		--glass-bg-hover: rgba(255, 255, 255, 0.05);
+		--glass-border: rgba(255, 255, 255, 0.1);
+		--glass-border-hover: rgba(255, 213, 0, 0.4); /* Gold on hover */
+		--glass-glow: rgba(255, 213, 0, 0.15);
+
+		/* ========================================
+		   TEXT
+		   ======================================== */
+		--text-primary: #f4efe4; /* Off-white, primary text */
+		--text-secondary: rgba(244, 239, 228, 0.7);
+		--text-muted: rgba(244, 239, 228, 0.5);
+
+		/* ========================================
+		   TYPOGRAPHY
+		   ======================================== */
+		/* Display - Bold neubrutalist headlines */
+		--font-display: 'Inter', 'Sora', sans-serif;
+		--font-weight-display: 800;
+		--letter-spacing-display: -0.02em;
+		--line-height-display: 1.1;
+
+		/* Body - Clean glassmorphism readability */
+		--font-body: 'Inter', system-ui, sans-serif;
+		--font-weight-body: 400;
+		--font-weight-body-medium: 500;
+		--line-height-body: 1.5;
+
+		/* Data/Mono - Numbers and stats */
+		--font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+		--font-weight-mono: 500;
+
+		/* Type scale */
+		--text-xs: 0.75rem; /* 12px - Labels, captions */
+		--text-sm: 0.875rem; /* 14px - Body, cards */
+		--text-base: 1rem; /* 16px - Standard body */
+		--text-lg: 1.125rem; /* 18px - Subheadings */
+		--text-xl: 1.25rem; /* 20px - Card titles */
+		--text-2xl: 1.5rem; /* 24px - Section headings */
+		--text-3xl: 1.875rem; /* 30px - Page titles */
+		--text-4xl: 2.25rem; /* 36px - Hero display */
+
+		/* ========================================
+		   GLASS EFFECTS
+		   ======================================== */
+		--glass-blur: blur(20px);
+		--glass-blur-intense: blur(40px);
+		--glass-saturate: saturate(180%);
+
+		/* ========================================
+		   NEUBRUTALIST SHADOWS
+		   ======================================== */
+		/* Primary brutal shadow - Gold accent */
+		--shadow-brutal: 8px 8px 0 rgba(0, 0, 0, 0.9), 8px 8px 0 2px var(--neon-gold);
+
+		/* Small brutal shadow */
+		--shadow-brutal-sm: 4px 4px 0 rgba(0, 0, 0, 0.8), 4px 4px 0 1px rgba(255, 255, 255, 0.2);
+
+		/* Glass card shadow */
+		--shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+		/* Glass hover shadow with glow */
+		--shadow-glass-hover: 0 12px 40px rgba(255, 213, 0, 0.3), 0 0 80px rgba(255, 213, 0, 0.1),
+			inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+		/* ========================================
+		   SPACING SCALE (4px base unit)
+		   ======================================== */
+		--spacing-1: 4px;
+		--spacing-2: 8px;
+		--spacing-3: 12px;
+		--spacing-4: 16px;
+		--spacing-5: 20px;
+		--spacing-6: 24px;
+		--spacing-8: 32px;
+		--spacing-10: 40px;
+		--spacing-12: 48px;
+		--spacing-16: 64px;
+		--spacing-20: 80px;
+		--spacing-24: 96px;
+
+		/* Layout gaps */
+		--gap-tight: 16px;
+		--gap-base: 24px;
+		--gap-loose: 32px;
+		--gap-section: 48px;
+
+		/* ========================================
+		   ANIMATIONS
+		   ======================================== */
+		/* Transition speeds */
+		--transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+		--transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+		--transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+		/* Easing curves */
+		--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+		--ease-out: cubic-bezier(0, 0, 0.2, 1);
+		--ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+		/* ========================================
+		   LAYOUT
+		   ======================================== */
+		--max-width: 1400px;
+		--border-radius-sm: 8px;
+		--border-radius-base: 12px;
+		--border-radius-lg: 16px;
+		--border-radius-xl: 24px;
+
+		/* ========================================
+		   RESPONSIVE BREAKPOINTS (for JS usage)
+		   ======================================== */
+		--breakpoint-sm: 640px;
+		--breakpoint-md: 768px;
+		--breakpoint-lg: 1024px;
+		--breakpoint-xl: 1280px;
+	}
+
+	/* ========================================
+	   MOBILE OPTIMIZATIONS (<640px)
+	   ======================================== */
+	@media (max-width: 640px) {
+		:root {
+			/* Reduce blur for performance on mobile */
+			--glass-blur: blur(12px);
+			--glass-blur-intense: blur(20px);
+
+			/* Scale down brutal shadows */
+			--shadow-brutal: 4px 4px 0 rgba(0, 0, 0, 0.8), 4px 4px 0 1px var(--neon-gold);
+			--shadow-brutal-sm: 2px 2px 0 rgba(0, 0, 0, 0.8), 2px 2px 0 1px rgba(255, 255, 255, 0.2);
+		}
+	}
+}
